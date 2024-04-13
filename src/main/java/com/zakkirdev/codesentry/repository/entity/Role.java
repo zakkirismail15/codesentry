@@ -1,8 +1,10 @@
 package com.zakkirdev.codesentry.repository.entity;
 
+import com.zakkirdev.codesentry.repository.enums.AccessRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -16,5 +18,11 @@ public class Role {
     private long id;
 
     @Column(length = 60)
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private AccessRole name;
+
+    @Override
+    public String toString() {
+        return name.toString();
+    }
 }

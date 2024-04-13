@@ -1,15 +1,19 @@
 package com.zakkirdev.codesentry.controller;
 
-import com.zakkirdev.codesentry.dto.LoginDTO;
+import com.zakkirdev.codesentry.controller.request.LoginReq;
+import com.zakkirdev.codesentry.controller.response.LoginRes;
 import com.zakkirdev.codesentry.dto.SignUpDTO;
 import com.zakkirdev.codesentry.repository.RoleRepository;
 import com.zakkirdev.codesentry.repository.UserRepository;
 import com.zakkirdev.codesentry.repository.entity.Role;
 import com.zakkirdev.codesentry.repository.entity.User;
+import com.zakkirdev.codesentry.repository.enums.AccessRole;
+import com.zakkirdev.codesentry.util.auth.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 
-import static com.zakkirdev.codesentry.repository.entity.Role.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,13 +42,25 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDTO loginDto){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getUsernameOrEmail(), loginDto.getPassword()));
+    @Autowired
+    private JwtUtil jwtUtil;
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity authenticateUser(@RequestBody LoginReq loginReq){
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    loginReq.getEmail(), loginReq.getPassword()));
+            String email = authentication.getName();
+            User user = userRepository.findByEmail(email).orElse(null);
+            String token = jwtUtil.createToken(user);
+            LoginRes loginRes = new LoginRes(email, token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return ResponseEntity.ok(loginRes);
+        }catch (BadCredentialsException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/signup")
@@ -68,7 +83,7 @@ public class AuthController {
         user.setEmail(signUpDTO.getEmail());
         user.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
 
-        Role roles = roleRepository.findByName("ROLE_ADMIN").get();
+        Role roles = roleRepository.findByName(AccessRole.ROLE_USER).orElse(null);
         user.setRoles(Collections.singleton(roles));
 
         userRepository.save(user);

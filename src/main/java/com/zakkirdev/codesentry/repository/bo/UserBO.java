@@ -1,6 +1,6 @@
 package com.zakkirdev.codesentry.repository.bo;
 
-import com.zakkirdev.codesentry.repository.enums.Role;
+import com.zakkirdev.codesentry.repository.enums.AccessRole;
 import lombok.Data;
 
 @Data
@@ -11,5 +11,5 @@ public class UserBO {
     private String email;
     private String firstName;
     private String lastName;
-    private Role role;
+    private AccessRole role;
 }
