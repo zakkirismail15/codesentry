@@ -2,12 +2,10 @@ package com.zakkirdev.codesentry.util.auth;
 
 import com.zakkirdev.codesentry.repository.entity.User;
 import io.jsonwebtoken.*;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import javax.naming.AuthenticationException;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

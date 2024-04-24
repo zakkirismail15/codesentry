@@ -1,8 +1,9 @@
 package com.zakkirdev.codesentry.controller;
 
-import com.zakkirdev.codesentry.controller.request.LoginReq;
-import com.zakkirdev.codesentry.controller.response.LoginRes;
-import com.zakkirdev.codesentry.dto.SignUpDTO;
+import com.zakkirdev.codesentry.controller.request.LoginRequest;
+import com.zakkirdev.codesentry.controller.request.SignUpRequest;
+import com.zakkirdev.codesentry.controller.response.ErrorResponse;
+import com.zakkirdev.codesentry.controller.response.LoginResponse;
 import com.zakkirdev.codesentry.repository.RoleRepository;
 import com.zakkirdev.codesentry.repository.UserRepository;
 import com.zakkirdev.codesentry.repository.entity.Role;
@@ -24,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.NoSuchElementException;
+
+import static com.zakkirdev.codesentry.util.error.GeneralError.*;
 
 
 @RestController
@@ -46,42 +50,36 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public ResponseEntity authenticateUser(@RequestBody LoginReq loginReq){
-        try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    loginReq.getEmail(), loginReq.getPassword()));
-            String email = authentication.getName();
-            User user = userRepository.findByEmail(email).orElse(null);
-            String token = jwtUtil.createToken(user);
-            LoginRes loginRes = new LoginRes(email, token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok(loginRes);
-        }catch (BadCredentialsException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity authenticateUser(@RequestBody LoginRequest loginRequest){
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginRequest.getEmail(), loginRequest.getPassword()));
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        String token = jwtUtil.createToken(user);
+        LoginResponse loginResponse = new LoginResponse(email, token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignUpDTO signUpDTO){
+    public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest){
         // add check for username exists in DB
-        if(userRepository.existsByUsername(signUpDTO.getUsername())){
+        if(userRepository.existsByUsername(signUpRequest.getUsername())){
             return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
         }
 
         // add check for email exists in DB
-        if(userRepository.existsByEmail(signUpDTO.getEmail())){
+        if(userRepository.existsByEmail(signUpRequest.getEmail())){
             return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
         }
 
         // create user object
         User user = new User();
-        user.setFirstName(signUpDTO.getFirstName());
-        user.setLastName(signUpDTO.getLastName());
-        user.setUsername(signUpDTO.getUsername());
-        user.setEmail(signUpDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
+        user.setFirstName(signUpRequest.getFirstName());
+        user.setLastName(signUpRequest.getLastName());
+        user.setUsername(signUpRequest.getUsername());
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
         Role roles = roleRepository.findByName(AccessRole.ROLE_USER).orElse(null);
         user.setRoles(Collections.singleton(roles));

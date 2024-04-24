@@ -43,7 +43,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize)->
                         authorize
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/project/**").permitAll()
                         .anyRequest().authenticated());
         http.sessionManagement(httpSecuritySessionManagementConfigurer ->
                 httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

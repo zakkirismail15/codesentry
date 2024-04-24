@@ -1,6 +1,5 @@
 package com.zakkirdev.codesentry.controller.response;
 
-import com.zakkirdev.codesentry.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

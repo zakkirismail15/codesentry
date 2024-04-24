@@ -1,9 +1,10 @@
-package com.zakkirdev.codesentry.dto;
+package com.zakkirdev.codesentry.controller.request;
 
 import lombok.Data;
 
 @Data
-public class SignUpDTO {
+public class SignUpRequest {
+
     private String firstName;
     private String lastName;
     private String username;

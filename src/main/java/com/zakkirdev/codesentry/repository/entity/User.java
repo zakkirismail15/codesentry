@@ -28,7 +28,7 @@ public class User {
     )
     @GenericGenerator(
             name = "user_id_sequence",
-            type = com.zakkirdev.codesentry.repository.sequence.UserSequence.class,
+            type = UserSequence.class,
             parameters = {
                     @org.hibernate.annotations.Parameter(name = UserSequence.INCREMENT_PARAM, value = "1"),
                     @org.hibernate.annotations.Parameter(name = UserSequence.VALUE_PREFIX_PARAMETER, value = "1"),
@@ -47,7 +47,7 @@ public class User {
 
     private String lastName;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))

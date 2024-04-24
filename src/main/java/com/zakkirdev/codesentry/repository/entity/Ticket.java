@@ -1,7 +1,7 @@
 package com.zakkirdev.codesentry.repository.entity;
 
-import com.zakkirdev.codesentry.repository.enums.Priority;
 import com.zakkirdev.codesentry.repository.enums.Status;
+import com.zakkirdev.codesentry.repository.enums.Priority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +19,12 @@ import java.time.LocalDateTime;
 public class Ticket {
 
     @Id
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "ticket_id_sequence"
+    )
     private Long id;
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.DETACH)
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project projectId;
     private String title;
@@ -29,10 +33,10 @@ public class Ticket {
     private Status status;
     @Enumerated(EnumType.STRING)
     private Priority priority;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.DETACH)
     @JoinColumn(name = "reportedBy", referencedColumnName = "id")
     private User reportedBy;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.DETACH)
     @JoinColumn(name = "assignedTo", referencedColumnName = "id")
     private User assignedTo;
     @CreationTimestamp

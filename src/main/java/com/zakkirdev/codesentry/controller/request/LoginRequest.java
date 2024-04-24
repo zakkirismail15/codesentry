@@ -3,8 +3,8 @@ package com.zakkirdev.codesentry.controller.request;
 import lombok.Data;
 
 @Data
-public class AdminUserReq {
+public class LoginRequest {
 
-    private String email;
-    private String role;
+    String email;
+    String password;
 }
