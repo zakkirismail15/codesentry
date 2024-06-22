@@ -2,7 +2,6 @@ package com.zakkirdev.codesentry.controller;
 
 import com.zakkirdev.codesentry.controller.request.LoginRequest;
 import com.zakkirdev.codesentry.controller.request.SignUpRequest;
-import com.zakkirdev.codesentry.controller.response.ErrorResponse;
 import com.zakkirdev.codesentry.controller.response.LoginResponse;
 import com.zakkirdev.codesentry.repository.RoleRepository;
 import com.zakkirdev.codesentry.repository.UserRepository;
@@ -14,20 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
-import java.util.NoSuchElementException;
 
-import static com.zakkirdev.codesentry.util.error.GeneralError.*;
 
 
 @RestController
@@ -56,7 +49,8 @@ public class AuthController {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow();
         String token = jwtUtil.createToken(user);
-        LoginResponse loginResponse = new LoginResponse(email, token);
+        AccessRole role = user.getRoles().stream().findFirst().get().getName();
+        LoginResponse loginResponse = new LoginResponse(email, token, role);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return ResponseEntity.ok(loginResponse);
     }

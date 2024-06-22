@@ -1,22 +1,14 @@
 package com.zakkirdev.codesentry.controller;
 
 import com.zakkirdev.codesentry.controller.request.ProjectRequest;
-import com.zakkirdev.codesentry.controller.response.ErrorResponse;
+import com.zakkirdev.codesentry.controller.response.ProjectResponse;
 import com.zakkirdev.codesentry.repository.ProjectRepository;
 import com.zakkirdev.codesentry.repository.entity.Project;
+import com.zakkirdev.codesentry.repository.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.NoSuchElementException;
-
-import static com.zakkirdev.codesentry.util.error.GeneralError.RESOURCE_NOT_FOUND;
-import static com.zakkirdev.codesentry.util.error.GeneralError.SYSTEM_ERROR;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -25,18 +17,17 @@ public class ProjectController {
     @Autowired
     private ProjectRepository projectRepository;
 
-    @PreAuthorize("hasRole('DEVELOPER')")
+    @Autowired
+    ProjectService projectService;
+
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
     @PostMapping("/project/create")
     public ResponseEntity createProject(@RequestBody ProjectRequest request){
-        Project newProject = new Project();
-        newProject.setTitle(request.getTitle());
-        newProject.setDescription(request.getDescription());
-
-        Project project = projectRepository.save(newProject);
-        return ResponseEntity.ok(project);
+        ProjectResponse response = projectService.createProject(request);
+        return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('DEVELOPER')")
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
     @PostMapping("/project/modify")
     public ResponseEntity modifyProject(@RequestBody ProjectRequest request){
         Project project = projectRepository.findById(request.getProjectId()).orElseThrow();
@@ -45,4 +36,33 @@ public class ProjectController {
         projectRepository.save(project);
         return ResponseEntity.ok(project);
     }
+
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
+    @GetMapping("/project/{id}")
+    public ResponseEntity getProject(@PathVariable Long id){
+        Project project = projectRepository.findById(id).orElseThrow();
+        return ResponseEntity.ok(project);
+    }
+
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
+    @GetMapping("/projects")
+    public ResponseEntity getProjects(){
+        return ResponseEntity.ok(projectRepository.findAll());
+    }
+
+
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
+    @PostMapping("/project/remove")
+    public ResponseEntity removeProject(@RequestBody ProjectRequest request){
+        projectRepository.deleteById(request.getProjectId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('PROJECT_MANAGER')")
+    @GetMapping("/project/user")
+    public ResponseEntity getProjectByUserId(){
+        return ResponseEntity.ok(projectService.getProjectByUserId());
+    }
+
+
 }
